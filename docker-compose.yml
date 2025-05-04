@@ -1,0 +1,59 @@
+services:
+  ollama:
+    image: docker.io/ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - 7869:11434
+    volumes:
+      - ${OLLAMA_FOLDER}/ollama:/root/.ollama
+    pull_policy: always
+    tty: true
+    restart: always
+    environment:
+      - OLLAMA_KEEP_ALIVE=24h
+      - OLLAMA_HOST=0.0.0.0
+    networks:
+      - ollama
+
+  open-webui:
+    networks:
+      - frontend
+      - ollama
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    environment:
+      OAUTH_CLIENT_ID: ${OAUTH_CLIENT_ID}
+      OAUTH_CLIENT_SECRET: ${OAUTH_CLIENT_SECRET}
+      OPENID_PROVIDER_URL: https://auth.habbi.cc/application/o/open-webui/.well-known/openid-configuration
+      OAUTH_PROVIDER_NAME: Authentik
+      ENABLE_OAUTH_SIGNUP: true
+      ENABLE_LOGIN_FORM: false
+      OLLAMA_BASE_URLS: http://host.docker.internal:7869
+      WEBUI_SECRET_KEY: ${WEBUI_SECRET_KEY}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.chat.rule=Host(`chat.habbi.cc`)"
+      - "traefik.http.routers.chat.entrypoints=websecure"
+      - "traefik.http.routers.chat.tls=true"
+      # - "traefik.http.routers.chat-http.rule=Host(`chat.habbi.cc`)"
+      # - "traefik.http.routers.chat-http.entrypoints=web"
+      # - "traefik.http.routers.chat-http.middlewares=to-https"
+      - "traefik.http.middlewares.to-https.redirectscheme.scheme=https"
+      - "traefik.http.routers.chat.tls.certresolver=letsencrypt"
+
+    volumes:
+      - ${OLLAMA_FOLDER}/open-webui:/app/backend/data
+    depends_on:
+      - ollama #-intel-gpu
+    ports:
+      - 3000:8080
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    restart: unless-stopped
+
+networks:
+  frontend:
+    external: true
+  ollama:
+    name: ollama
+    driver: bridge
