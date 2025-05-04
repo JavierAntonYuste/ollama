@@ -1,42 +1,43 @@
 services:
-  # ollama:
-  #   image: docker.io/ollama/ollama:latest
-  #   container_name: ollama
-  #   ports:
-  #     - 7869:11434
-  #   volumes:
-  #     - ${OLLAMA_FOLDER}/ollama:/root/.ollama
-  #     - /etc/ssl/certs:/etc/ssl/certs
-  #   pull_policy: always
-  #   tty: true
-  #   restart: unless-stopped
-  #   environment:
-  #     - OLLAMA_KEEP_ALIVE=24h
-  #     - OLLAMA_HOST=0.0.0.0
-  #   networks:
-  #     - ollama
   ollama:
-    # image: ollama/ollama #:rocm
-    build:
-        context: ${OLLAMA_FOLDER}/.
-        dockerfile: Dockerfile
-    
+    image: docker.io/ollama/ollama:latest
     container_name: ollama
-    volumes:
-      - ${OLLAMA_FOLDER}/ollama:/root/.ollama
-      - /tmp/.X11-unix:/tmp/.X11-unix
-    environment:
-      # - 'HSA_OVERRIDE_GFX_VERSION=${HSA_OVERRIDE_GFX_VERSION-11.0.0}'
-      - DISPLAY=${DISPLAY}
     ports:
       - 7869:11434
-    networks:
-      - ollama
+    volumes:
+      - ${OLLAMA_FOLDER}/ollama:/root/.ollama
+      - /etc/ssl/certs:/etc/ssl/certs
     pull_policy: always
     tty: true
     restart: unless-stopped
-    devices:
-      - /dev/dri:/dev/dri
+    environment:
+      - OLLAMA_KEEP_ALIVE=24h
+      - OLLAMA_HOST=0.0.0.0
+      - no_proxy=localhost,127.0.0.1
+    networks:
+      - ollama
+  # ollama:
+  #   # image: ollama/ollama #:rocm
+  #   build:
+  #       context: ${OLLAMA_FOLDER}/.
+  #       dockerfile: Dockerfile
+    
+  #   container_name: ollama
+  #   volumes:
+  #     - ${OLLAMA_FOLDER}/ollama:/root/.ollama
+  #     - /tmp/.X11-unix:/tmp/.X11-unix
+  #   environment:
+  #     # - 'HSA_OVERRIDE_GFX_VERSION=${HSA_OVERRIDE_GFX_VERSION-11.0.0}'
+  #     - DISPLAY=${DISPLAY}
+  #   ports:
+  #     - 7869:11434
+  #   networks:
+  #     - ollama
+  #   pull_policy: always
+  #   tty: true
+  #   restart: unless-stopped
+  #   devices:
+  #     - /dev/dri:/dev/dri
 
   open-webui:
     networks:
