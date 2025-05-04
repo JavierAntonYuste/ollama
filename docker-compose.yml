@@ -6,6 +6,7 @@ services:
       - 7869:11434
     volumes:
       - ${OLLAMA_FOLDER}/ollama:/root/.ollama
+      - /etc/ssl/certs:/etc/ssl/certs:ro
     pull_policy: always
     tty: true
     restart: unless-stopped
