@@ -17,6 +17,10 @@ deploy_docker_compose:
     - cp docker-compose.yml ${OLLAMA_FOLDER}/
     - cp .env ${OLLAMA_FOLDER}/
     - docker compose up -d
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: always
+    - when: never
 
 cleanup:
   stage: cleanup
