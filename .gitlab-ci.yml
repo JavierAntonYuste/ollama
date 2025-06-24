@@ -1,36 +1,13 @@
-variables:
-  DOCKER_HOST: "unix:///var/run/docker.sock"
 stages:
   - deploy
   - cleanup
 
-deploy_docker_compose:
-  stage: deploy
-  image: ${CICD_CONTAINER}
-  id_tokens:
-    VAULT_ID_TOKEN:
-      aud: http://10.0.0.33:8200
-  script:
-    - source .env
-    - source /scripts/fetch_vault_secrets.sh apps ollama OAUTH_CLIENT_ID OAUTH_CLIENT_SECRET WEBUI_SECRET_KEY
-    - cp Dockerfile ${OLLAMA_FOLDER}/
-    - cp docker-compose.yml ${OLLAMA_FOLDER}/
-    - cp .env ${OLLAMA_FOLDER}/
-    - docker compose up -d
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main"
-      when: always
-    - when: never
+include:
+  - component: $CI_SERVER_FQDN/components/docker/deploy@~latest
+    inputs:
+      app_volume: "/mnt/system/apps/ollama"
+      app_name_in_vault: "ollama"
+      variables_in_vault: "OAUTH_CLIENT_ID OAUTH_CLIENT_SECRET WEBUI_SECRET_KEY"
+      reset_before_deploy: true
 
-cleanup:
-  stage: cleanup
-  image: ${CICD_CONTAINER}
-  id_tokens:
-    VAULT_ID_TOKEN:
-      aud: http://10.0.0.33:8200
-  script:
-    # - source /scripts/fetch_vault_secrets.sh apps seafile INIT_SEAFILE_MYSQL_ROOT_PASSWORD SEAFILE_MYSQL_DB_PASSWORD JWT_PRIVATE_KEY
-    - echo "Cleaning up Docker Compose setup..."
-    - docker-compose down -v
-  when: manual
-  
+  - component: $CI_SERVER_FQDN/components/docker/cleanup@~latest
