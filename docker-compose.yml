@@ -63,7 +63,7 @@ services:
       # - "traefik.http.routers.chat-http.entrypoints=web"
       # - "traefik.http.routers.chat-http.middlewares=to-https"
       - "traefik.http.middlewares.to-https.redirectscheme.scheme=https"
-      - "traefik.http.routers.chat.tls.certresolver=letsencrypt"
+      # - "traefik.http.routers.chat.tls.certresolver=letsencrypt"
 
     volumes:
       - ${OLLAMA_FOLDER}/open-webui:/app/backend/data
